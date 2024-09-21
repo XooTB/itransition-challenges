@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useStore } from "zustand";
 import useAuthStore from "../stores/AuthStore";
+import { useUrl } from "crossroad";
 
 const useDeleteUser = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const { user } = useStore(useAuthStore);
+	const { user, logout } = useStore(useAuthStore);
+	const [_, setUrl] = useUrl();
 
 	const removeUser = async (id: number) => {
 		setIsLoading(true);
@@ -29,7 +31,11 @@ const useDeleteUser = () => {
 				throw new Error(data.error);
 			}
 
-			const data = await response.json();
+			if (user?.id === id) {
+				logout();
+			}
+
+			// const data = await response.json();
 
 			setIsLoading(false);
 		} catch (err: any) {
