@@ -116,18 +116,3 @@ class RecordGenerator {
 }
 
 export default RecordGenerator;
-
-// // Usage example:
-// const options: GeneratorOptions = {
-// 	region: "USA",
-// 	seed: 12345,
-// 	pageNumber: 1,
-// };
-
-// const generator = new FakeDataGenerator(options);
-// const page = generator.generatePage(10);
-// console.log(page);
-
-// // Generate a random seed
-// const randomSeed = FakeDataGenerator.generateRandomSeed();
-// console.log("Random seed:", randomSeed);
