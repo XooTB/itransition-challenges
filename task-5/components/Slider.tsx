@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { ChangeEvent } from "react";
 
 interface SliderProps {
@@ -7,20 +6,18 @@ interface SliderProps {
 	step?: number;
 	initialValue?: number;
 	onChange?: (value: number) => void;
+	value?: number;
 }
 
-const Slider: React.FC<SliderProps> = ({
+const Slider = ({
 	min = 0,
 	max = 100,
 	step = 1,
-	initialValue = 50,
+	value,
 	onChange,
-}) => {
-	const [value, setValue] = useState<number>(initialValue);
-
+}: SliderProps) => {
 	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const newValue = Number(e.target.value);
-		setValue(newValue);
 		if (onChange) {
 			onChange(newValue);
 		}

@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import Input from "./Input";
 import Slider from "./Slider";
 
@@ -11,16 +11,19 @@ interface ErrorSpecProps {
 }
 
 const ErrorSpec = ({ errorRate, setErrorRate }: ErrorSpecProps) => {
+	const [sliderValue, setSliderValue] = useState<number>(errorRate);
+
 	const handleSliderChange = useCallback(
 		(value: number) => {
-			setErrorRate(Math.round(value * 100)); // Convert 0-10 to 0-1000
+			setErrorRate(value);
+			setSliderValue(value);
 		},
 		[setErrorRate],
 	);
 
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const value = Math.min(1000, Math.max(0, Number(e.target.value)));
+			const value = Number(e.target.value);
 			setErrorRate(value);
 		},
 		[setErrorRate],
@@ -36,7 +39,6 @@ const ErrorSpec = ({ errorRate, setErrorRate }: ErrorSpecProps) => {
 					<Input
 						id="errorInput"
 						type="number"
-						min={0}
 						max={1000}
 						value={Math.round(errorRate)}
 						onChange={handleInputChange}
@@ -48,8 +50,8 @@ const ErrorSpec = ({ errorRate, setErrorRate }: ErrorSpecProps) => {
 				min={0}
 				max={10}
 				step={0.1}
-				initialValue={errorRate / 100}
 				onChange={handleSliderChange}
+				value={Math.min(errorRate, 10)}
 			/>
 		</div>
 	);

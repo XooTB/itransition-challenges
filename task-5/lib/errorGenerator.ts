@@ -24,13 +24,18 @@ class ErrorGenerator {
 		return x - Math.floor(x);
 	}
 
-	private deleteCharacter(str: string): string {
-		if (str.length === 0) return str;
+	private deleteCharacter(str: string, minLength: number): string {
+		if (str.length <= minLength) return str;
 		const index = Math.floor(this.random() * str.length);
 		return str.slice(0, index) + str.slice(index + 1);
 	}
 
-	private addCharacter(str: string, allowedChars: string): string {
+	private addCharacter(
+		str: string,
+		allowedChars: string,
+		maxLength: number,
+	): string {
+		if (str.length >= maxLength) return str;
 		const charToAdd =
 			allowedChars[Math.floor(this.random() * allowedChars.length)];
 		const index = Math.floor(this.random() * (str.length + 1));
@@ -45,13 +50,18 @@ class ErrorGenerator {
 		);
 	}
 
-	private applyRandomError(str: string, allowedChars: string): string {
+	private applyRandomError(
+		str: string,
+		allowedChars: string,
+		minLength: number,
+		maxLength: number,
+	): string {
 		const errorType = Math.floor(this.random() * 3);
 		switch (errorType) {
 			case 0:
-				return this.deleteCharacter(str);
+				return this.deleteCharacter(str, minLength);
 			case 1:
-				return this.addCharacter(str, allowedChars);
+				return this.addCharacter(str, allowedChars, maxLength);
 			case 2:
 				return this.swapCharacters(str);
 			default:
@@ -59,36 +69,52 @@ class ErrorGenerator {
 		}
 	}
 
+	private ensureMinLength(
+		str: string,
+		minLength: number,
+		allowedChars: string,
+	): string {
+		let result = str;
+		while (result.length < minLength) {
+			result = this.addCharacter(result, allowedChars, minLength);
+		}
+		return result;
+	}
+
+	private ensureMaxLength(str: string, maxLength: number): string {
+		return str.slice(0, maxLength);
+	}
+
 	applyErrors(info: Info): Info {
 		const errorCount = Math.floor(this.errorRate);
 		const fractionalError = this.errorRate - errorCount;
 		const result = { ...info };
 
-		const applyErrorToField = (
-			field: "fullName" | "address" | "phoneNumber",
-		) => {
-			let allowedChars: string;
-			switch (field) {
-				case "fullName":
-					allowedChars =
-						"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ";
-					break;
-				case "address":
-					allowedChars =
-						"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,.";
-					break;
-				case "phoneNumber":
-					allowedChars = "0123456789-";
-					break;
-			}
-			result[field] = this.applyRandomError(result[field], allowedChars);
+		const fieldConstraints = {
+			fullName: {
+				min: 2,
+				max: 50,
+				chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ",
+			},
+			address: {
+				min: 5,
+				max: 100,
+				chars:
+					"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,.",
+			},
+			phoneNumber: { min: 7, max: 20, chars: "0123456789-" },
 		};
 
-		const fields: ("fullName" | "address" | "phoneNumber")[] = [
-			"fullName",
-			"address",
-			"phoneNumber",
-		];
+		const applyErrorToField = (field: keyof typeof fieldConstraints) => {
+			const { min, max, chars } = fieldConstraints[field];
+			result[field] = this.applyRandomError(result[field], chars, min, max);
+			result[field] = this.ensureMinLength(result[field], min, chars);
+			result[field] = this.ensureMaxLength(result[field], max);
+		};
+
+		const fields = Object.keys(
+			fieldConstraints,
+		) as (keyof typeof fieldConstraints)[];
 
 		for (let i = 0; i < errorCount; i++) {
 			const field = fields[Math.floor(this.random() * fields.length)];

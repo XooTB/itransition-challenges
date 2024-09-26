@@ -53,12 +53,16 @@ const Table = ({ data, tableRef }: Props) => {
 const DataTable = () => {
 	const [data, setData] = useState<Info[]>([]);
 	const [erroredData, setErroredData] = useState<Info[]>([]);
-	const [seed, setSeed] = useState<number>(0);
+	const [seed, setSeed] = useState<number>(
+		Math.floor(Math.random() * 100000000000000),
+	);
 	const [region, setRegion] = useState<string>("England");
 	const [page, setPage] = useState<number>(1);
 	const tableRef = useRef<HTMLTableElement>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [errorRate, setErrorRate] = useState<number>(0);
+
+	console.log(errorRate);
 
 	const handleRegionChange = async (
 		e: React.ChangeEvent<HTMLSelectElement>,
@@ -88,7 +92,7 @@ const DataTable = () => {
 		setIsLoading(true);
 		try {
 			const res = await fetch(
-				`/api?seed=${seed}&region=${region}&count=10&page=${page}`,
+				`/api?seed=${seed}&region=${region}&count=10&page=${page + 1}`,
 			);
 			const newData = await res.json();
 			setData((prevData) => [...prevData, ...newData]);
@@ -144,8 +148,6 @@ const DataTable = () => {
 		const newData = data.map((info) => errorGenerator.applyErrors(info));
 		setErroredData(newData);
 	}, [errorRate, data]);
-
-	const handleExport = () => {};
 
 	return (
 		<div className="w-full px-20 rounded-lg mt-10">
